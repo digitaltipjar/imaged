@@ -81,8 +81,9 @@ app.post('/', upload.single('image'), function (req, res) {
                 console.error("error uploading image");
                 res.status(500).send({ error: 'Upload error' });
               }else{
+                const fullURL = req.protocol + "://" + req.get('host') + '/images/' + hash + extension;
                 res.status(200);
-                res.end();
+                res.send(fullURL);
               }
             });
         });
