@@ -13,30 +13,6 @@ const gmObj = gm.subClass({ imageMagick: true });
 const app = express();
 const port = process.env.PORT || 3000;
 
-function getExtension(fileName){
-    return '.' + fileName.split('.').pop();
-};
-
-function getMimeType(extension) {
-  if(extension == '.png')
-      return 'image/png';
-
-  if(extension == '.jpg' || extension == '.jpeg' || extension == '.jpe')
-      return 'image/jpeg';
-
-  if(extension == '.gif')
-      return 'image/gif';
-
-  if(extension == '.tif' || extension == '.tiff')
-      return 'image/tif';
-
-  if(extension == '.bmp')
-      return 'image/bmp';
-
-  return 'application/octet-stream';
-
-};
-
 function getFolderName(width, height, ignore_aspect ){
   if(!width && !height){
     return "original";
@@ -52,47 +28,6 @@ function getFolderName(width, height, ignore_aspect ){
 
   return "w" + width + "h" + height;
 }
-
-app.post('/', upload.single('image'), function (req, res) {
-
-    let image = req.file;
-
-    if(!image){
-      return res.status(412).send({ error: 'No File Attached.' });
-    }
-
-    if(image.mimetype.indexOf('image/') > -1){
-        fs.readFile(image.path, function (err, data) {
-            let hash = uuid.v4();
-            let extension = getExtension(image.originalname);
-
-            const uploadParams = {
-              Bucket: process.env.S3_BUCKET,
-              Key: "original" + '/' + hash + extension,
-              Body: data,
-              ContentLength: image.size,
-              ContentType: getMimeType(extension),
-              ACL: 'public-read'
-            }
-
-            s3.putObject(uploadParams, function(error, data){
-              if(error){
-                console.log(error);
-                console.error("error uploading image");
-                res.status(500).send({ error: 'Upload error' });
-              }else{
-                const fullURL = req.protocol + "://" + req.get('host') + '/images/' + hash + extension;
-                res.status(200);
-                res.send(fullURL);
-              }
-            });
-        });
-    }else{
-        return res.send(412, { error: 'Not an image' });
-    }
-
-
-});
 
 app.get('/images/:hash', (req, res) => {
 
