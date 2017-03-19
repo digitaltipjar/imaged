@@ -38,7 +38,7 @@ app.get('/images/:hash', (req, res) => {
 
   const reqParams = {
     Bucket: process.env.S3_BUCKET,
-    Key: folderName + '/' + hash,
+    Key: folderName + '/' + hash
   };
 
   s3.headObject(
@@ -53,12 +53,10 @@ app.get('/images/:hash', (req, res) => {
         s3.headObject(reqParams, function(error, data) {
           if (error) {
             console.info(`image with ${folderName} not found, creating now`);
-
-            const s3Stream = s3
-              .getObject(
-                Object.assign({}, reqParams, { Key: 'original' + '/' + hash }),
-              )
-              .createReadStream();
+            const getObjectConfig = Object.assign({}, reqParams, {
+              Key: 'original' + '/' + hash
+            });
+            const s3Stream = s3.getObject(getObjectConfig).createReadStream();
 
             console.info('shrinking');
             gmObj(s3Stream)
@@ -74,7 +72,7 @@ app.get('/images/:hash', (req, res) => {
                       Body: buffer,
                       ContentLength: buffer.length,
                       ContentType: originalData.ContentType,
-                      ACL: 'public-read',
+                      ACL: 'public-read'
                     }),
                     function(error, data) {
                       if (error) {
@@ -85,7 +83,7 @@ app.get('/images/:hash', (req, res) => {
                         res.status(200);
                         res.end(buffer);
                       }
-                    },
+                    }
                   );
                 }
               });
@@ -95,7 +93,7 @@ app.get('/images/:hash', (req, res) => {
           }
         });
       }
-    },
+    }
   );
 });
 
