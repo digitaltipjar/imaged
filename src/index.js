@@ -88,34 +88,36 @@ app.get('/images/:hash', async (req, res) => {
     //Let's generate a new resized image now
     //We get the original image and resize it
     const s3Stream = s3.getObject(getObjectConfig).createReadStream();
-    gmObj(s3Stream).resize(width, height, ignore_aspect).toBuffer(function(error, buffer){
-      if (error) {
-        console.error('error generating image');
-        res.status(500).send({ error: 'Image generation error' });
-        return;
-      }
+    gmObj(s3Stream)
+        .resize(width, height, ignore_aspect)
+        .toBuffer(async function(error, buffer) {
+            if (error) {
+                console.error('error generating image');
+                res.status(500).send({ error: 'Image generation error' });
+                return;
+            }
 
-      console.info('uploading shrunken image');
-      const putParams = Object.assign({}, reqParams, {
-          Body: buffer,
-          ContentLength: buffer.length,
-          ContentType: originalData.ContentType,
-          ACL: 'public-read',
-      });
+            console.info('uploading shrunken image');
+            const putParams = Object.assign({}, reqParams, {
+                Body: buffer,
+                ContentLength: buffer.length,
+                ContentType: originalData.ContentType,
+                ACL: 'public-read',
+            });
 
-      const putResizedImagePromise = s3.putObject(putParams).promise();
+            const putResizedImagePromise = s3.putObject(putParams).promise();
 
-      [error, data] = await to(putResizedImagePromise);
+            [error, data] = await to(putResizedImagePromise);
 
-      if (error) {
-          console.error('error uploading image');
-          res.status(500).send({ error: 'Upload error' });
-      } else {
-          console.info('sending image response');
-          res.status(200);
-          res.end(buffer);
-      }
-    });
+            if (error) {
+                console.error('error uploading image');
+                res.status(500).send({ error: 'Upload error' });
+            } else {
+                console.info('sending image response');
+                res.status(200);
+                res.end(buffer);
+            }
+        });
 });
 
 let server = app.listen(port, () => {
