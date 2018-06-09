@@ -89,7 +89,7 @@ app.get('/images/:hash', async (req, res) => {
     //We get the original image and resize it
     const s3Stream = s3.getObject(getObjectConfig).createReadStream();
     const resize = gmObj(s3Stream).resize(width, height, ignore_aspect);
-    const bufferPromise = util.promisify(resize.toBuffer);
+    const bufferPromise = util.promisify(resize.toBuffer.toBuffer);
 
     console.log(bufferPromise);
 
