@@ -15,7 +15,6 @@ const port = process.env.PORT || 3000;
 
 //http://blog.grossman.io/how-to-write-async-await-without-try-catch-blocks-in-javascript/
 function to(promise) {
-    console.log(promise);
     return promise.then(data => [null, data]).catch(err => [err, null]);
 }
 
@@ -92,6 +91,8 @@ app.get('/images/:hash', async (req, res) => {
     const bufferPromise = util.promisify(
         gmObj(s3Stream).resize(width, height, ignore_aspect).toBuffer
     );
+
+    console.log(bufferPromise);
 
     [error, buffer] = await to(bufferPromise);
 
